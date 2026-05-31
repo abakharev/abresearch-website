@@ -1,0 +1,5 @@
+﻿# Original design prototype (not part of deployment)
+AB_Research/
+
+# Local dev tooling
+.claude/

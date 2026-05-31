@@ -1,0 +1,1274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AB Research — Custom Moldflow APIs &amp; Simulation Consulting</title>
+<meta name="description" content="Specialist consultancy for engineering teams who depend on Autodesk Moldflow. Custom Solver APIs, Synergy automation, material calibration, and ML surrogates — by the engineer who architected Moldflow's Solver API at Autodesk." />
+<meta name="author" content="Alexander Bakharev" />
+<meta property="og:title" content="AB Research — Custom Moldflow APIs &amp; Simulation Consulting" />
+<meta property="og:description" content="Moldflow predictions that match what comes off the press. Solver APIs, Synergy automation, material calibration, ML surrogates." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #f5f4ef;
+    --bg-2: #ebe9e2;
+    --ink: #0e1a36;
+    --ink-2: #3a4259;
+    --ink-3: #7a8195;
+    --line: #d8d5cb;
+    --line-2: #c3bfb2;
+    --accent: #1f4ed8;
+    --accent-soft: #f57c2d;
+    --paper: #ffffff;
+    --max: 1280px;
+    --pad: clamp(20px, 4vw, 56px);
+    --gap: clamp(48px, 8vw, 120px);
+    --radius: 2px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-size: 16px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; }
+  .serif { font-family: 'Fraunces', Georgia, serif; font-feature-settings: 'ss01', 'ss02'; }
+
+  .wrap {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 var(--pad);
+    position: relative;
+  }
+
+  /* ---- Nav ---- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in oklab, var(--bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 72px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 8px;
+    text-decoration: none;
+  }
+  .brand-logo {
+    height: 40px;
+    width: auto;
+    display: block;
+    object-fit: contain;
+  }
+  @media (max-width: 720px) { .brand-logo { height: 32px; } }
+  .nav-links {
+    display: flex; gap: 28px; align-items: center;
+  }
+  .nav-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--ink-2); text-decoration: none;
+    transition: color .15s ease;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-cta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 8px 16px;
+    background: var(--ink-2); color: var(--paper);
+    border: 1px solid var(--ink-2);
+    text-decoration: none;
+    border-radius: 3px;
+    transition: all .15s ease;
+  }
+  .nav-cta:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--paper);
+  }
+  @media (max-width: 720px) { .nav-links a:not(.nav-cta) { display: none; } }
+
+  /* ---- Section header pattern ---- */
+  .section { padding: var(--gap) 0; position: relative; }
+  .section + .section { border-top: 1px solid var(--line); }
+  .section-eyebrow {
+    display: flex; align-items: center; gap: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 28px;
+  }
+  .section-eyebrow .num { color: var(--accent); }
+  .section-eyebrow .line { flex: 0 0 32px; height: 1px; background: var(--line-2); }
+
+  /* ---- Hero ---- */
+  .hero {
+    position: relative;
+    padding: clamp(48px, 10vh, 120px) 0 clamp(64px, 12vh, 140px);
+    overflow: hidden;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: clamp(32px, 6vw, 80px);
+    align-items: center;
+  }
+  @media (max-width: 880px) { .hero-grid { grid-template-columns: 1fr; } }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-2);
+    padding: 6px 10px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    margin-bottom: 28px;
+  }
+  .hero-eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 22%, transparent);
+  }
+  h1.hero-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 350;
+    font-size: clamp(44px, 7.2vw, 96px);
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    margin: 0 0 28px;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  h1.hero-title em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 350;
+  }
+  .hero-sub {
+    font-size: clamp(16px, 1.4vw, 18px);
+    line-height: 1.55;
+    color: var(--ink-2);
+    max-width: 46ch;
+    margin: 0 0 32px;
+  }
+  .hero-actions {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; letter-spacing: 0.04em;
+    padding: 13px 20px;
+    text-decoration: none;
+    border-radius: 1px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all .15s ease;
+    background: none;
+    font-size: 13px;
+  }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn-ghost {
+    background: transparent; color: var(--ink);
+    border-color: var(--line-2);
+  }
+  .btn-ghost:hover { border-color: var(--ink); background: var(--paper); }
+  .btn .arrow {
+    display: inline-block; transition: transform .2s ease;
+  }
+  .btn:hover .arrow { transform: translateX(3px); }
+
+  /* Hero visual */
+  .hero-viz {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .hero-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    background: var(--paper);
+    display: block;
+    z-index: 1;
+  }
+  .hero-viz::after {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at center, transparent 55%, color-mix(in oklab, var(--bg) 35%, transparent) 100%),
+      repeating-linear-gradient(0deg, transparent 0px, transparent 2px, color-mix(in oklab, var(--ink) 4%, transparent) 2px, color-mix(in oklab, var(--ink) 4%, transparent) 3px);
+    mix-blend-mode: multiply;
+    z-index: 2;
+  }
+  .hero-viz-label {
+    position: absolute; top: 14px; left: 14px;
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-3);
+    z-index: 3;
+  }
+  .hero-viz-label::before {
+    content: ''; width: 7px; height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .hero-viz-corner {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--ink-3);
+    z-index: 3;
+  }
+  .hero-viz-corner.tr { top: 14px; right: 14px; }
+  .hero-viz-corner.bl { bottom: 14px; left: 14px; }
+  .hero-viz-corner.br { bottom: 14px; right: 14px; }
+
+  /* Hero stats strip */
+  .hero-stats {
+    margin-top: clamp(48px, 8vh, 88px);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-stats > div {
+    padding: 24px 0;
+    border-right: 1px solid var(--line);
+  }
+  .hero-stats > div:last-child { border-right: none; }
+  .hero-stats > div:not(:first-child) { padding-left: 24px; }
+  .stat-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 350;
+    font-size: clamp(32px, 4vw, 48px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .stat-num .suf { color: var(--accent); font-style: italic; }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  @media (max-width: 720px) {
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    .hero-stats > div { border-bottom: 1px solid var(--line); }
+    .hero-stats > div:nth-child(2) { border-right: none; }
+  }
+
+  /* ---- Services ---- */
+  .services-head {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+    align-items: end; margin-bottom: 56px;
+  }
+  @media (max-width: 880px) { .services-head { grid-template-columns: 1fr; } }
+  h2.section-title {
+    font-family: 'Fraunces', serif; font-weight: 350;
+    font-size: clamp(32px, 4.5vw, 56px); line-height: 1.02;
+    letter-spacing: -0.02em; margin: 0;
+    color: var(--ink); text-wrap: balance;
+  }
+  h2.section-title em { font-style: italic; color: var(--accent); font-weight: 350; }
+  .section-lede {
+    font-size: 16px; color: var(--ink-2); line-height: 1.6;
+    max-width: 42ch; margin: 0;
+  }
+
+  .services {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  @media (max-width: 720px) { .services { grid-template-columns: 1fr; } }
+  .service {
+    padding: 36px 32px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    transition: background .2s ease;
+    cursor: default;
+    position: relative;
+  }
+  .service:hover { background: var(--paper); }
+  .service:hover .service-icon { color: var(--accent); }
+  .service-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-3);
+    letter-spacing: 0.1em;
+    margin-bottom: 28px;
+  }
+  .service-icon {
+    width: 36px; height: 36px;
+    color: var(--ink-2);
+    margin-bottom: 28px;
+    transition: color .2s ease;
+  }
+  .service-icon svg { width: 100%; height: 100%; }
+  .service-title {
+    font-family: 'Fraunces', serif; font-weight: 400;
+    font-size: 24px; line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px; color: var(--ink);
+  }
+  .service-desc {
+    font-size: 14px; line-height: 1.55;
+    color: var(--ink-2); margin: 0;
+  }
+  .service-tag {
+    position: absolute; top: 32px; right: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.08em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+
+  /* ---- About / Bio ---- */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: clamp(40px, 6vw, 88px);
+    align-items: start;
+  }
+  @media (max-width: 880px) { .about-grid { grid-template-columns: 1fr; } }
+  .portrait-frame {
+    position: relative;
+    aspect-ratio: 4/5;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .portrait-caption {
+    margin-top: 16px;
+    display: flex; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-3);
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .portrait-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: 75% 30%;
+    display: block;
+    filter: saturate(0.85) contrast(1.02);
+  }
+  .portrait-overlay {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .portrait-overlay > span {
+    position: absolute;
+    background: color-mix(in oklab, black 35%, transparent);
+    color: white;
+    padding: 4px 8px;
+    backdrop-filter: blur(4px);
+  }
+  .portrait-overlay .po-tl { top: 10px; left: 10px; }
+  .portrait-overlay .po-tr { top: 10px; right: 10px; }
+  .portrait-overlay .po-bl { bottom: 10px; left: 10px; }
+  .portrait-overlay .po-br { bottom: 10px; right: 10px; }
+
+  .about-name {
+    font-family: 'Fraunces', serif; font-weight: 350;
+    font-size: clamp(36px, 5vw, 64px); line-height: 1;
+    letter-spacing: -0.025em;
+    margin: 0 0 20px;
+    color: var(--ink);
+  }
+  .about-name .last { font-style: italic; color: var(--accent); font-weight: 350; }
+  .about-tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--ink-3);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin: 0 0 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .about-lead {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(20px, 2vw, 26px);
+    line-height: 1.35;
+    font-weight: 350;
+    color: var(--ink);
+    margin: 0 0 40px;
+    text-wrap: pretty;
+  }
+
+  /* Timeline */
+  .timeline {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    border-top: 1px solid var(--line);
+  }
+  .tl-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 140px;
+    gap: 24px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .tl-row { grid-template-columns: 1fr; gap: 8px; }
+  }
+  .tl-country {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent);
+    padding-top: 4px;
+  }
+  .tl-body {
+    font-size: 15px; line-height: 1.55;
+    color: var(--ink); text-wrap: pretty;
+  }
+  .tl-body strong { font-weight: 600; color: var(--ink); }
+  .tl-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-3);
+    letter-spacing: 0.06em; text-align: right;
+    padding-top: 4px;
+  }
+  @media (max-width: 720px) { .tl-meta { text-align: left; } }
+
+  /* ---- Publications ---- */
+  .pubs-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  }
+  @media (max-width: 720px) { .pubs-grid { grid-template-columns: 1fr; } }
+  .pub-card {
+    display: block;
+    padding: 32px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    color: inherit;
+    transition: all .2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .pub-card:hover { border-color: var(--ink); }
+  .pub-card:hover .pub-arrow { transform: translate(4px, -4px); color: var(--accent); }
+  .pub-card-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-3); margin-bottom: 32px;
+  }
+  .pub-card-title {
+    font-family: 'Fraunces', serif; font-weight: 400;
+    font-size: 22px; line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+  }
+  .pub-card-desc {
+    font-size: 14px; color: var(--ink-2);
+    line-height: 1.5; margin: 0;
+  }
+  .pub-arrow {
+    position: absolute; top: 32px; right: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px; color: var(--ink-2);
+    transition: all .2s ease;
+  }
+
+  /* ---- Credentials ---- */
+  .creds {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  @media (max-width: 720px) { .creds { grid-template-columns: 1fr; } }
+  .cred {
+    background: var(--paper);
+    padding: 48px 40px;
+    display: flex; flex-direction: column; align-items: flex-start;
+    gap: 28px;
+  }
+  .cred-logo-frame {
+    width: 100%;
+    aspect-ratio: 3/1;
+    background: var(--bg-2);
+    border: 1px dashed var(--line-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cred-logo-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .cred-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-3);
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .cred-title {
+    font-family: 'Fraunces', serif; font-weight: 400;
+    font-size: 22px; line-height: 1.2;
+    margin: 0; color: var(--ink);
+  }
+  .cred-desc {
+    font-size: 14px; color: var(--ink-2);
+    line-height: 1.55; margin: 0;
+  }
+
+  /* ---- Contact ---- */
+  #contact { background: var(--paper); }
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: clamp(40px, 6vw, 88px);
+  }
+  @media (max-width: 880px) { .contact-grid { grid-template-columns: 1fr; } }
+
+  .contact-info-block {
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+  }
+  .info-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: center;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .info-val {
+    font-size: 15px; color: var(--ink);
+    text-decoration: none;
+  }
+  .info-val:hover { color: var(--accent); }
+
+  /* Contact form */
+  .form {
+    display: grid;
+    gap: 18px;
+  }
+  .form-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+  }
+  @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .field input, .field textarea {
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line-2);
+    padding: 10px 0;
+    outline: none;
+    transition: border-color .15s ease;
+    resize: vertical;
+  }
+  .field input:focus, .field textarea:focus {
+    border-bottom-color: var(--accent);
+  }
+  .field textarea { min-height: 96px; }
+  .field.err input, .field.err textarea { border-bottom-color: var(--accent); }
+  .field-err {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.08em;
+    color: var(--accent);
+    min-height: 14px;
+  }
+  .form-actions {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 12px;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .form-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .form-status.ok { color: #1a7a4a; }
+  .form-status.err { color: var(--accent); }
+
+  /* ---- Footer ---- */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 48px 0 32px;
+    background: var(--bg);
+  }
+  .foot {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 56px;
+  }
+  @media (max-width: 720px) { .foot { grid-template-columns: 1fr 1fr; } }
+  .foot h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0 0 16px; font-weight: 500;
+  }
+  .foot a {
+    display: block;
+    color: var(--ink-2); text-decoration: none;
+    font-size: 14px; padding: 4px 0;
+  }
+  .foot a:hover { color: var(--accent); }
+  .foot-blurb {
+    font-family: 'Fraunces', serif;
+    font-size: 18px; line-height: 1.35;
+    color: var(--ink); margin: 0 0 16px; font-weight: 350;
+  }
+  .foot-bottom {
+    border-top: 1px solid var(--line);
+    padding-top: 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-3);
+    letter-spacing: 0.08em;
+    flex-wrap: wrap; gap: 12px;
+  }
+
+  /* Reveal animation */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .8s cubic-bezier(.2,.6,.2,1), transform .8s cubic-bezier(.2,.6,.2,1);
+  }
+  .reveal.in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Lab notebook grid paper background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--ink) 4%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--ink) 4%, transparent) 1px, transparent 1px);
+    background-size: 48px 48px;
+    z-index: 0;
+    opacity: 0.7;
+  }
+  .nav, main, footer { position: relative; z-index: 1; }
+
+  .lab-mark {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.08em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+
+  /* Section corner crosshairs */
+  .section::before, .section::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    background:
+      linear-gradient(var(--line-2), var(--line-2)) center / 12px 1px no-repeat,
+      linear-gradient(var(--line-2), var(--line-2)) center / 1px 12px no-repeat;
+    opacity: 0.7;
+  }
+  .section::before { top: 8px; left: 8px; }
+  .section::after { top: 8px; right: 8px; }
+
+  /* Page index strip */
+  .page-index {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 30;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: color-mix(in oklab, var(--bg) 80%, transparent);
+    backdrop-filter: blur(8px);
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    pointer-events: none;
+  }
+  .page-index .sep { color: var(--line-2); margin: 0 6px; }
+  @media (max-width: 720px) { .page-index { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="page-index" id="page-index">
+  <span id="pi-section">§00 · INTRO</span>
+  <span class="sep">/</span>
+  <span>AB-RESEARCH · LAB NOTEBOOK · V.2026.05</span>
+</div>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a href="#top" class="brand">
+      <img src="assets/AB_Research_logo.png" alt="AB Research" class="brand-logo"/>
+    </a>
+    <div class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#about">About</a>
+      <a href="#publications">Publications</a>
+      <a href="#contact" class="nav-cta">Contact →</a>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <span class="hero-eyebrow"><span class="dot"></span>Autodesk Authorized Developer · Melbourne, AU</span>
+          <h1 class="hero-title">
+            Moldflow predictions that <em>match</em> what comes off the press.
+          </h1>
+          <p class="hero-sub">
+            AB Research is a specialist consultancy for engineering teams who depend on Autodesk Moldflow. We extend the solver, automate Synergy workflows, calibrate material data to your resin, and use machine learning to account for missing data — by the engineer who architected Moldflow's Solver API at Autodesk.
+          </p>
+          <div class="hero-actions">
+            <a href="#contact" class="btn btn-primary">Book a scoping call <span class="arrow">→</span></a>
+            <a href="#services" class="btn btn-ghost">Capabilities</a>
+          </div>
+          <div class="lab-mark" style="margin-top: 28px; display: flex; gap: 24px; flex-wrap: wrap;">
+            <span>EXP-001 · Filling sim</span>
+            <span>OBS · See FIG.01 →</span>
+            <span>REV 2026.05</span>
+          </div>
+        </div>
+
+        <div class="hero-viz" aria-hidden="true">
+          <video
+            class="hero-video"
+            src="assets/hero-injection.webm"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+          ></video>
+          <span class="hero-viz-label">Live · Filling sim</span>
+          <span class="hero-viz-corner tr">FIG.01</span>
+          <span class="hero-viz-corner bl" id="viz-time">T = 0.00s</span>
+          <span class="hero-viz-corner br">Single gate</span>
+        </div>
+      </div>
+
+      <div class="hero-stats reveal">
+        <div>
+          <div class="stat-num">30<span class="suf">+</span></div>
+          <div class="stat-label">Years simulating</div>
+        </div>
+        <div>
+          <div class="stat-num">3<span class="suf">×</span></div>
+          <div class="stat-label">Countries shipped</div>
+        </div>
+        <div>
+          <div class="stat-num">1<span class="suf">D→3D</span></div>
+          <div class="stat-label">Solver dimensions</div>
+        </div>
+        <div>
+          <div class="stat-num">1<span class="suf">×</span></div>
+          <div class="stat-label">EU patent · Solver API</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services" class="section">
+    <div class="wrap">
+      <div class="section-eyebrow"><span class="line"></span><span class="num">01</span><span>Services</span></div>
+      <div class="services-head reveal">
+        <h2 class="section-title">Four ways we make <em>your</em> Moldflow programme more predictive.</h2>
+        <p class="section-lede">Each engagement is scoped against a measurable outcome — a closed correlation gap, a Synergy workflow that runs unattended, a surrogate model that hits target accuracy on your part family.</p>
+      </div>
+
+      <div class="services reveal">
+        <div class="service">
+          <div class="service-num">01 / 04</div>
+          <span class="service-tag">Solver API</span>
+          <div class="service-icon" aria-hidden="true">
+            <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.25">
+              <rect x="3" y="3" width="30" height="30"/>
+              <path d="M3 12 H33 M3 21 H33 M12 3 V33 M21 3 V33"/>
+              <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+              <circle cx="21" cy="21" r="1.6" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3 class="service-title">Custom Moldflow Solver APIs</h3>
+          <p class="service-desc">Plug-in physical models, custom boundary conditions, and post-processors that run inside the Moldflow solver itself — the integration path designed and shipped at Autodesk by our principal.</p>
+        </div>
+
+        <div class="service">
+          <div class="service-num">02 / 04</div>
+          <span class="service-tag">Synergy</span>
+          <div class="service-icon" aria-hidden="true">
+            <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.25">
+              <path d="M6 30 V12 L18 6 L30 12 V30"/>
+              <path d="M6 18 L18 24 L30 18"/>
+              <path d="M18 6 V24"/>
+            </svg>
+          </div>
+          <h3 class="service-title">Synergy automation &amp; tooling</h3>
+          <p class="service-desc">Automated study setup, batch DOE runs, and standardised reporting inside Moldflow Synergy. Typical engagement: 60–80% reduction in analyst hours per project and a workflow your team owns.</p>
+        </div>
+
+        <div class="service">
+          <div class="service-num">03 / 04</div>
+          <span class="service-tag">Materials</span>
+          <div class="service-icon" aria-hidden="true">
+            <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.25">
+              <path d="M6 30 C 6 18, 10 18, 14 24 S 22 30, 24 18 S 30 6, 33 12"/>
+              <path d="M3 33 H33"/>
+              <path d="M3 3 V33" />
+            </svg>
+          </div>
+          <h3 class="service-title">Material property calibration</h3>
+          <p class="service-desc">When the Moldflow material card doesn't match what's in your press, we fit the constitutive model to your rheology and PVT data — closing the correlation gap that blocks first-shot success.</p>
+        </div>
+
+        <div class="service">
+          <div class="service-num">04 / 04</div>
+          <span class="service-tag">ML</span>
+          <div class="service-icon" aria-hidden="true">
+            <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.25">
+              <circle cx="9" cy="9" r="2.5"/>
+              <circle cx="9" cy="27" r="2.5"/>
+              <circle cx="27" cy="18" r="2.5"/>
+              <circle cx="18" cy="6" r="2"/>
+              <circle cx="18" cy="30" r="2"/>
+              <path d="M11 9 L25 17 M11 27 L25 19 M11 9 L16 7 M11 27 L16 29"/>
+            </svg>
+          </div>
+          <h3 class="service-title">Machine learning surrogates</h3>
+          <p class="service-desc">Trained on your simulation runs to explore design spaces in seconds rather than days — feed optimisers, support design reviews, and quote with confidence before the full 3D solve completes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="section">
+    <div class="wrap">
+      <div class="section-eyebrow"><span class="line"></span><span class="num">02</span><span>Principal · Bio</span></div>
+
+      <div class="about-grid">
+        <div>
+          <div class="portrait-frame">
+            <img src="assets/alexander_portrait.jpg" alt="Alexander Bakharev" class="portrait-img"/>
+            <div class="portrait-overlay" aria-hidden="true">
+              <span class="po-tl">SUBJ·01</span>
+              <span class="po-tr">f/3.5 · 1/200s</span>
+              <span class="po-bl">— SUBJ &amp; FAUNA</span>
+              <span class="po-br">DSC_0349</span>
+            </div>
+          </div>
+          <div class="portrait-caption">
+            <span>Alexander Bakharev</span>
+            <span>Ph.D · Principal</span>
+          </div>
+        </div>
+
+        <div class="reveal">
+          <h2 class="about-name">Alexander <span class="last">Bakharev</span></h2>
+          <p class="about-tagline">30 years · digital manufacturing simulation</p>
+          <p class="about-lead">
+            One problem, three continents, thirty years: how molten plastic fills a mould, and how good a job software can do predicting it. AB Research is the practice that sells that experience back to the engineering teams who depend on it.
+          </p>
+
+          <div class="timeline">
+            <div class="tl-row">
+              <div class="tl-country">Russia</div>
+              <div class="tl-body">Wrote my Ph.D. on <strong>1.5D simulation of injection molding</strong> — the academic foundation.</div>
+              <div class="tl-meta">Ph.D · 1.5D</div>
+            </div>
+            <div class="tl-row">
+              <div class="tl-country">USA</div>
+              <div class="tl-body">Post-doc at the <strong>University of Illinois</strong> under Prof. Charles L. Tucker, working on <strong>2.5D simulation of injection molding and RTM</strong>.</div>
+              <div class="tl-meta">Post-doc · 2.5D</div>
+            </div>
+            <div class="tl-row">
+              <div class="tl-country">Australia</div>
+              <div class="tl-body">Joined <strong>Moldflow</strong> (later acquired by Autodesk) developing commercial 2.5D and 3D simulation. Architected the <strong>Solver API</strong> — the extension layer that opens Moldflow's physical models to customisation.</div>
+              <div class="tl-meta">Moldflow / Autodesk · 3D</div>
+            </div>
+            <div class="tl-row">
+              <div class="tl-country">Now</div>
+              <div class="tl-body">Independent. Building the market for those extensions, calibrating material models, and applying ML to digital manufacturing.</div>
+              <div class="tl-meta">AB Research</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PUBLICATIONS -->
+  <section id="publications" class="section">
+    <div class="wrap">
+      <div class="section-eyebrow"><span class="line"></span><span class="num">03</span><span>Publications &amp; IP</span></div>
+      <div class="services-head reveal" style="margin-bottom: 40px;">
+        <h2 class="section-title">Peer-reviewed work and <em>granted IP</em>.</h2>
+        <p class="section-lede">Three decades of research output — from injection-molding fundamentals to the extension architecture inside Moldflow itself.</p>
+      </div>
+
+      <div class="pubs-grid reveal">
+        <a class="pub-card" href="https://www.linkedin.com/in/alexander-bakharev-2b48344/details/publications/" target="_blank" rel="noopener">
+          <div class="pub-card-eyebrow">LinkedIn · Full record</div>
+          <div class="pub-arrow">↗</div>
+          <h3 class="pub-card-title">Selected publications</h3>
+          <p class="pub-card-desc">Journal articles, conference papers, and chapters across injection-molding simulation, RTM, and constitutive modelling — full list maintained on LinkedIn.</p>
+        </a>
+        <a class="pub-card" href="https://patents.google.com/patent/EP4159404A1/en" target="_blank" rel="noopener">
+          <div class="pub-card-eyebrow">EP4159404A1 · European Patent</div>
+          <div class="pub-arrow">↗</div>
+          <h3 class="pub-card-title">Solver extension architecture</h3>
+          <p class="pub-card-desc">Granted patent covering methods and systems for customising physical models in industrial simulation software — the technical foundation of the Moldflow Solver API.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CREDENTIALS -->
+  <section class="section">
+    <div class="wrap">
+      <div class="section-eyebrow"><span class="line"></span><span class="num">04</span><span>Credentials</span></div>
+
+      <div class="creds reveal">
+        <div class="cred">
+          <div class="cred-logo-frame">
+            <span class="cred-logo-text">Autodesk Authorized Developer</span>
+          </div>
+          <div>
+            <div class="cred-label">Partner status</div>
+            <h3 class="cred-title">Autodesk Authorized Developer</h3>
+          </div>
+          <p class="cred-desc">Formally recognised developer for the Autodesk ecosystem — building extensions and integrations that ship alongside Autodesk products.</p>
+        </div>
+        <div class="cred">
+          <div class="cred-logo-frame">
+            <span class="cred-logo-text">Autodesk Moldflow</span>
+          </div>
+          <div>
+            <div class="cred-label">Platform</div>
+            <h3 class="cred-title">Autodesk Moldflow</h3>
+          </div>
+          <p class="cred-desc">All work targets the Moldflow product family — the same codebase I helped build commercial 2.5D and 3D simulation features into over a 20+ year tenure.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="section">
+    <div class="wrap">
+      <div class="section-eyebrow"><span class="line"></span><span class="num">05</span><span>Contact</span></div>
+
+      <div class="contact-grid">
+        <div>
+          <h2 class="section-title">Tell me about your <em>simulation problem.</em></h2>
+          <p class="section-lede" style="margin-top: 24px;">A short brief is enough to start. I respond personally within two business days, anywhere in the world.</p>
+
+          <div class="contact-info-block">
+            <div class="info-row">
+              <span class="info-label">Phone</span>
+              <a class="info-val" href="tel:+61400801082">+61 400 801 082</a>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Email</span>
+              <a class="info-val" href="mailto:alex@abresearch.com.au">alex@abresearch.com.au</a>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Based</span>
+              <span class="info-val">Melbourne, Australia (UTC+10/11)</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">LinkedIn</span>
+              <a class="info-val" href="https://www.linkedin.com/in/alexander-bakharev-2b48344/" target="_blank" rel="noopener">alexander-bakharev →</a>
+            </div>
+          </div>
+        </div>
+
+        <form class="form" id="contact-form" novalidate>
+          <div class="form-row">
+            <div class="field" id="field-name">
+              <label for="f-name">Your name <span style="color:var(--accent)">*</span></label>
+              <input id="f-name" name="name" autocomplete="name" placeholder="Alexander Bakharev"/>
+              <div class="field-err" id="err-name"></div>
+            </div>
+            <div class="field" id="field-email">
+              <label for="f-email">Email <span style="color:var(--accent)">*</span></label>
+              <input id="f-email" name="email" type="email" autocomplete="email" placeholder="you@company.com"/>
+              <div class="field-err" id="err-email"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-phone">Phone <span style="color:var(--ink-3)">(optional)</span></label>
+            <input id="f-phone" name="phone" autocomplete="tel" placeholder="+61 …"/>
+            <div class="field-err"></div>
+          </div>
+          <div class="field" id="field-message">
+            <label for="f-msg">Tell me about the project <span style="color:var(--accent)">*</span></label>
+            <textarea id="f-msg" name="message" placeholder="Plastic, geometry, what you've tried, what's not predicting well…"></textarea>
+            <div class="field-err" id="err-message"></div>
+          </div>
+          <div class="form-actions">
+            <span class="form-status" id="form-status">Replies within 2 business days</span>
+            <button class="btn btn-primary" type="submit" id="form-submit">
+              Send enquiry <span class="arrow">→</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <p class="foot-blurb">AB Research extends and tunes commercial injection-molding simulation, from solver to surrogate.</p>
+        <div class="mono" style="font-size: 11px; color: var(--ink-3); letter-spacing: 0.08em;">Melbourne · Australia</div>
+      </div>
+      <div>
+        <h4>Practice</h4>
+        <a href="#services">Solver APIs</a>
+        <a href="#services">Synergy automation</a>
+        <a href="#services">Material calibration</a>
+        <a href="#services">Machine learning</a>
+      </div>
+      <div>
+        <h4>Profile</h4>
+        <a href="#about">About</a>
+        <a href="#publications">Publications</a>
+        <a href="https://patents.google.com/patent/EP4159404A1/en" target="_blank" rel="noopener">Patent ↗</a>
+        <a href="https://www.linkedin.com/in/alexander-bakharev-2b48344/" target="_blank" rel="noopener">LinkedIn ↗</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <a href="tel:+61400801082">+61 400 801 082</a>
+        <a href="mailto:alex@abresearch.com.au">alex@abresearch.com.au</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 AB Research</span>
+      <span>v.2026.05 · Melbourne, Australia</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ---- Scroll reveal ---- */
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('in');
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+/* ---- Scroll spy — page-index label ---- */
+const sectionMap = [
+  { id: 'top',          label: '§00 · INTRO' },
+  { id: 'services',     label: '§01 · SERVICES' },
+  { id: 'about',        label: '§02 · BIO' },
+  { id: 'publications', label: '§03 · PUBS & IP' },
+  { id: 'contact',      label: '§05 · CONTACT' },
+];
+const piEl = document.getElementById('pi-section');
+const spyObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const match = sectionMap.find(s => s.id === e.target.id);
+      if (match && piEl) piEl.textContent = match.label;
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+sectionMap.forEach(s => {
+  const el = document.getElementById(s.id);
+  if (el) spyObs.observe(el);
+});
+
+/* ---- Hero video time readout ---- */
+(function () {
+  const v = document.querySelector('.hero-video');
+  const t = document.getElementById('viz-time');
+  if (!v || !t) return;
+  v.addEventListener('timeupdate', () => {
+    t.textContent = 'T = ' + v.currentTime.toFixed(2) + 's';
+  });
+}());
+
+/* ---- Smooth scroll ---- */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id = a.getAttribute('href');
+    if (id.length > 1) {
+      const el = document.querySelector(id);
+      if (el) {
+        e.preventDefault();
+        const top = el.getBoundingClientRect().top + window.pageYOffset - 56;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    }
+  });
+});
+
+/* ---- Contact form ---- */
+(function () {
+  const form     = document.getElementById('contact-form');
+  const statusEl = document.getElementById('form-status');
+  const submitBtn = document.getElementById('form-submit');
+
+  /*
+   * FormSpree endpoint — sign up at https://formspree.io to get a free
+   * form endpoint, then replace the placeholder below with your form ID:
+   *   e.g. 'https://formspree.io/f/xpwzabcd'
+   *
+   * Until configured, the form will open a mailto: fallback.
+   */
+  const FORMSPREE_ENDPOINT = '';
+
+  function setStatus(msg, kind) {
+    statusEl.textContent = msg;
+    statusEl.className = 'form-status' + (kind ? ' ' + kind : '');
+  }
+
+  function validate(data) {
+    const errs = {};
+    if (!data.name.trim())    errs.name    = 'Name required';
+    if (!data.email.trim())   errs.email   = 'Email required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) errs.email = 'Invalid email';
+    if (!data.message.trim()) errs.message = 'Message required';
+    else if (data.message.trim().length < 10) errs.message = 'Min 10 characters';
+    return errs;
+  }
+
+  function showErrs(errs) {
+    ['name', 'email', 'message'].forEach(k => {
+      const fieldEl = document.getElementById('field-' + k);
+      const errEl   = document.getElementById('err-' + k);
+      if (fieldEl) fieldEl.classList.toggle('err', !!errs[k]);
+      if (errEl)   errEl.textContent = errs[k] || '';
+    });
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const data = {
+      name:    form.querySelector('#f-name').value,
+      email:   form.querySelector('#f-email').value,
+      phone:   form.querySelector('#f-phone').value,
+      message: form.querySelector('#f-msg').value,
+    };
+
+    const errs = validate(data);
+    showErrs(errs);
+    if (Object.keys(errs).length) {
+      setStatus('Check the marked fields', 'err');
+      return;
+    }
+
+    /* No FormSpree endpoint configured — open mailto fallback */
+    if (!FORMSPREE_ENDPOINT) {
+      const body = encodeURIComponent(
+        'Name: '    + data.name    + '\n' +
+        'Phone: '   + (data.phone || '—') + '\n\n' +
+        data.message
+      );
+      window.location.href =
+        'mailto:alex@abresearch.com.au' +
+        '?subject=' + encodeURIComponent('Enquiry from ' + data.name) +
+        '&body=' + body;
+      return;
+    }
+
+    submitBtn.disabled = true;
+    setStatus('Sending…', '');
+
+    try {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        setStatus('✓ Thank you — your enquiry has been sent.', 'ok');
+        form.reset();
+        showErrs({});
+      } else {
+        throw new Error('Server error ' + res.status);
+      }
+    } catch {
+      setStatus('Something went wrong — please email alex@abresearch.com.au directly.', 'err');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  /* Clear field error on input */
+  ['f-name', 'f-email', 'f-msg'].forEach(id => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    input.addEventListener('input', () => {
+      const key = { 'f-name': 'name', 'f-email': 'email', 'f-msg': 'message' }[id];
+      const fieldEl = document.getElementById('field-' + key);
+      const errEl   = document.getElementById('err-' + key);
+      if (fieldEl) fieldEl.classList.remove('err');
+      if (errEl)   errEl.textContent = '';
+      setStatus('Replies within 2 business days', '');
+    });
+  });
+}());
+</script>
+</body>
+</html>
