@@ -661,6 +661,14 @@
     font-size: 14px; padding: 4px 0;
   }
   .foot a:hover { color: var(--accent); }
+  .foot a.partner-link {
+    display: flex; align-items: center; gap: 7px;
+  }
+  .partner-favicon {
+    width: 16px; height: 16px;
+    border-radius: 3px; flex-shrink: 0;
+    opacity: 0.85;
+  }
   .foot-blurb {
     font-family: 'Fraunces', serif;
     font-size: 18px; line-height: 1.35;
@@ -1107,8 +1115,14 @@
       </div>
       <div>
         <h4>Partners</h4>
-        <a href="https://marketplace.autodesk.com/" target="_blank" rel="noopener">Autodesk Marketplace ↗</a>
-        <a href="https://moderncad.com.au/" target="_blank" rel="noopener">Modern CAD ↗</a>
+        <a href="https://marketplace.autodesk.com/" target="_blank" rel="noopener" class="partner-link">
+          <img src="https://www.google.com/s2/favicons?domain=marketplace.autodesk.com&sz=16" width="16" height="16" alt="" class="partner-favicon">Autodesk Marketplace ↗</a>
+        <a href="https://moderncad.com.au/" target="_blank" rel="noopener" class="partner-link">
+          <img src="https://www.google.com/s2/favicons?domain=moderncad.com.au&sz=16" width="16" height="16" alt="" class="partner-favicon">Modern CAD ↗</a>
+        <a href="https://madisongroup.com/" target="_blank" rel="noopener" class="partner-link">
+          <img src="https://www.google.com/s2/favicons?domain=madisongroup.com&sz=16" width="16" height="16" alt="" class="partner-favicon">Madison Group ↗</a>
+        <a href="https://www.aplicit.com/" target="_blank" rel="noopener" class="partner-link">
+          <img src="https://www.google.com/s2/favicons?domain=aplicit.com&sz=16" width="16" height="16" alt="" class="partner-favicon">Aplicit ↗</a>
       </div>
     </div>
     <div class="foot-bottom">
